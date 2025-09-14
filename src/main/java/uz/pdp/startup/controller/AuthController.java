@@ -34,4 +34,10 @@ public class AuthController {
         String register = authService.register(registerDTO);
         return ResponseEntity.ok(register);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResult<String>> refresh(@RequestBody String refreshToken) {
+        String newAccessToken = authService.refreshToken(refreshToken);
+        return ResponseEntity.ok(ApiResult.success(newAccessToken));
+    }
 }

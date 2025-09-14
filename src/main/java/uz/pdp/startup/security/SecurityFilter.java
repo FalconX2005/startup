@@ -15,12 +15,8 @@ import uz.pdp.startup.entity.User;
 import java.io.IOException;
 import java.util.Objects;
 
-/**
- * Created by: Umar
- * DateTime: 7/19/2025 2:39 PM
- */
 @Component
-public class SecurityFilter  extends OncePerRequestFilter {
+public class SecurityFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final AuthService authService;
@@ -34,26 +30,23 @@ public class SecurityFilter  extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
         String authorization = request.getHeader("Authorization");
 
-        // todo JWT token
         if (Objects.nonNull(authorization) && authorization.startsWith("Bearer ")) {
-
             String token = authorization.substring(7);
-
-            String username = jwtProvider.validateToken(token);
-
-            User user = (User)authService.loadUserByUsername(username);
-
-            Authentication authenticationToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            try {
+                String username = jwtProvider.validateToken(token);
+                User user = (User) authService.loadUserByUsername(username);
+                Authentication authenticationToken =
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } catch (RuntimeException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write(e.getMessage());
+                return;
+            }
         }
-
-
 
         filterChain.doFilter(request, response);
     }
-
 }

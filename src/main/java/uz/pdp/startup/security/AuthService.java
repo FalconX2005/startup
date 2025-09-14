@@ -18,4 +18,5 @@ public interface AuthService extends UserDetailsService {
 
     String register(RegisterDTO registerDTO);
 
+    String refreshToken(String refreshToken);
 }

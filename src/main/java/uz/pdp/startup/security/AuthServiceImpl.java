@@ -12,6 +12,7 @@ import uz.pdp.startup.entity.User;
 import uz.pdp.startup.enums.RoleEnum;
 import uz.pdp.startup.payload.LoginDTO;
 import uz.pdp.startup.payload.RegisterDTO;
+import uz.pdp.startup.security.TokenDTO;
 import uz.pdp.startup.repository.UserRepository;
 
 import java.util.Date;
@@ -49,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(LoginDTO loginDTO) {
+    public TokenDTO login(LoginDTO loginDTO) {
         User user = (User) loadUserByUsername(loginDTO.getUsername());
 
         boolean matches = passwordEncoder.matches(loginDTO.getPassword(), user.getPassword());
@@ -57,10 +58,19 @@ public class AuthServiceImpl implements AuthService {
             throw new AccessDeniedException("Username yoki parol noto‘g‘ri");
         }
 
-        return jwtProvider.generateToken(
+        // Access token – 15 min
+        String accessToken = jwtProvider.generateToken(
                 user.getUsername(),
-                new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000) // 1 kunlik token
+                new Date(System.currentTimeMillis() + 15 * 60 * 1000)
         );
+
+        // Refresh token – 30 kun
+        String refreshToken = jwtProvider.generateToken(
+                user.getUsername(),
+                new Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000)
+        );
+
+        return new TokenDTO(accessToken, refreshToken);
     }
 
     @Override
@@ -72,11 +82,23 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setUsername(registerDTO.getUsername());
         user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
-//        user.setEmail(registerDTO.getEmail());
         user.setRole(registerDTO.getRole());
 
         userRepository.save(user);
 
         return "Foydalanuvchi muvaffaqiyatli ro'yxatdan o'tdi";
     }
+
+    @Override
+    public String refreshToken(String refreshToken) {
+        String username = jwtProvider.validateToken(refreshToken);
+
+        String newAccessToken = jwtProvider.generateToken(
+                username,
+                new Date(System.currentTimeMillis() + 15 * 60 * 1000)
+        );
+
+        return newAccessToken;
+    }
+
 }
