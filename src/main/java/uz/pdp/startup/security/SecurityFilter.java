@@ -1,5 +1,6 @@
 package uz.pdp.startup.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,10 +36,15 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (Objects.nonNull(authorization) && authorization.startsWith("Bearer ")) {
             String token = authorization.substring(7);
             try {
-                String username = jwtProvider.validateToken(token);
+                Claims claims = jwtProvider.validateAndGetClaims(token);
+                String username = claims.getSubject();
+
                 User user = (User) authService.loadUserByUsername(username);
+
+                // Authentication ichiga claims ham qo‘shamiz
                 Authentication authenticationToken =
-                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(user, claims, user.getAuthorities());
+
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             } catch (RuntimeException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -49,4 +55,5 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
 }

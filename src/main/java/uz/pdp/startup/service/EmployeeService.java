@@ -2,6 +2,7 @@ package uz.pdp.startup.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uz.pdp.startup.entity.Attachment;
 import uz.pdp.startup.entity.Company;
@@ -34,6 +35,7 @@ public class EmployeeService {
     private final AttachmentRepository attachmentRepository;
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Transactional
@@ -128,7 +130,7 @@ public class EmployeeService {
 
         User user = new User();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(userDTO.getPassword());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setRole(userDTO.getRole());
 //        user.setEmail(userDTO.getEmail());
         userRepository.save(user);
@@ -195,7 +197,7 @@ public class EmployeeService {
             throw RestException.notFound("User not found for employee", id);
         }
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setRole(userDto.getRole());
         User save = userRepository.save(user);
 

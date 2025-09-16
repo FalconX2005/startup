@@ -1,5 +1,6 @@
 package uz.pdp.startup.security;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -58,20 +59,19 @@ public class AuthServiceImpl implements AuthService {
             throw new AccessDeniedException("Username yoki parol noto‘g‘ri");
         }
 
-        // Access token – 15 min
         String accessToken = jwtProvider.generateToken(
-                user.getUsername(),
-                new Date(System.currentTimeMillis() + 15 * 60 * 1000)
+                user,
+                new Date(System.currentTimeMillis() + 15 * 60 * 1000) // 15 min
         );
 
-        // Refresh token – 30 kun
         String refreshToken = jwtProvider.generateToken(
-                user.getUsername(),
-                new Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000)
+                user,
+                new Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000) // 30 kun
         );
 
         return new TokenDTO(accessToken, refreshToken);
     }
+
 
     @Override
     public String register(RegisterDTO registerDTO) {
@@ -91,14 +91,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String refreshToken(String refreshToken) {
-        String username = jwtProvider.validateToken(refreshToken);
+        Claims claims = jwtProvider.validateAndGetClaims(refreshToken);
+        String username = claims.getSubject();
+
+        User user = (User) loadUserByUsername(username);
 
         String newAccessToken = jwtProvider.generateToken(
-                username,
-                new Date(System.currentTimeMillis() + 15 * 60 * 1000)
+                user,
+                new Date(System.currentTimeMillis() + 15 * 60 * 1000) // 15 min
         );
 
         return newAccessToken;
     }
-
 }

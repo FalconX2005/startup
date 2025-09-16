@@ -28,7 +28,6 @@ public class AuthController {
         return authService.login(loginDTO);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody RegisterDTO registerDTO) {
         String register = authService.register(registerDTO);

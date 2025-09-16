@@ -1,9 +1,6 @@
 package uz.pdp.startup.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.security.core.GrantedAuthority;
@@ -56,5 +53,7 @@ public class User  extends AbsLongEntity implements UserDetails{
     private Long telegramChatId;
 
 
-
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 }
