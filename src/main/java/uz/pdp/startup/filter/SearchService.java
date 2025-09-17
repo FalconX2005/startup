@@ -11,6 +11,7 @@ import uz.pdp.startup.entity.Client;
 import uz.pdp.startup.entity.Company;
 import uz.pdp.startup.entity.Employee;
 import uz.pdp.startup.exception.RestException;
+import uz.pdp.startup.payload.ApiResult;
 import uz.pdp.startup.payload.ClientDTO;
 import uz.pdp.startup.payload.CompanyDTO;
 import uz.pdp.startup.payload.EmployeeDTO;
@@ -30,7 +31,7 @@ public class SearchService {
     private final EntityManager entityManager;
 
 
-    public List<CompanyDTO> searchCompany(String companyName) {
+    public ApiResult<List<CompanyDTO>> searchCompany(String companyName) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Company> criteriaQuery = criteriaBuilder.createQuery(Company.class);
         Root<Company> from = criteriaQuery.from(Company.class);
@@ -43,13 +44,13 @@ public class SearchService {
 
         List<Company> resultList = entityManager.createQuery(criteriaQuery).getResultList();
         if(resultList.isEmpty()) {
-            throw RestException.error("Company not found");
+            return ApiResult.error("company not found");
         }
 
-       return resultList
+       return ApiResult.success(resultList
                .stream()
                .map(this::convertCompanyToDto)
-               .collect(Collectors.toList());
+               .collect(Collectors.toList()));
     }
 
     private CompanyDTO convertCompanyToDto(Company company) {
@@ -62,7 +63,7 @@ public class SearchService {
                 .build();
     }
 
-    public List<ClientDTO> searchClient(String name) {
+    public ApiResult<List<ClientDTO>> searchClient(String name) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
         Root<Client> from = criteriaQuery.from(Client.class);
@@ -78,13 +79,13 @@ public class SearchService {
 
         List<Client> resultList = entityManager.createQuery(criteriaQuery).getResultList();
         if(resultList.isEmpty()) {
-            throw RestException.error("Client not found");
+return ApiResult.error("client not found");
         }
 
-        return resultList
+        return ApiResult.success(resultList
                 .stream()
                 .map(this::convertClientToDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     private ClientDTO convertClientToDto(Client client) {
@@ -100,7 +101,7 @@ public class SearchService {
                 .build();
     }
 
-    public List<EmployeeDTO> searchEmployee(String name){
+    public ApiResult<List<EmployeeDTO>> searchEmployee(String name){
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
         Root<Employee> from = criteriaQuery.from(Employee.class);
@@ -116,13 +117,13 @@ public class SearchService {
 
         List<Employee> resultList = entityManager.createQuery(criteriaQuery).getResultList();
         if(resultList.isEmpty()) {
-            throw RestException.error("Employee not found");
+            return ApiResult.error("employee not found ");
         }
 
-        return resultList
+        return ApiResult.success(resultList
                 .stream()
                 .map(this::convertEmployeeToDto)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
 
     }
 

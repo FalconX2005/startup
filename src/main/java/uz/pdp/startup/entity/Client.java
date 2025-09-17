@@ -1,10 +1,8 @@
 package uz.pdp.startup.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 import uz.pdp.startup.entity.tempAbs.AbsLongEntity;
 
 @Entity
@@ -14,6 +12,7 @@ import uz.pdp.startup.entity.tempAbs.AbsLongEntity;
 @Setter
 @ToString
 @Builder
+@SQLDelete(sql = "UPDATE client SET deleted = true WHERE id = ?")
 public class Client extends AbsLongEntity {
 
     @OneToOne(cascade = CascadeType.ALL,orphanRemoval = true)

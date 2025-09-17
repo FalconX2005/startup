@@ -27,16 +27,34 @@ public class CompanyClientService {
     private final ClientRepository clientRepository;
     private final CompanyRepository companyRepository;
 
-    // companyga tegishli clientlarni company id bo'yicha sortlash
-    public List<ClientDTO> findAllClients(Long companyId){
-        List<CompanyClient> clients= companyClientRepository.findByCompanyId(companyId);
-        List<ClientDTO> result = new ArrayList<>();
-        for (CompanyClient client: clients) {
-            ClientDTO byId = clientService.getById(client.getClient().getId());
-            result.add(byId);
-        }
-        return result;
+//    // companyga tegishli clientlarni company id bo'yicha sortlash
+//    public List<ClientDTO> findAllClients(Long companyId){
+//        List<CompanyClient> clients= companyClientRepository.findByCompanyId(companyId);
+//        List<ClientDTO> result = new ArrayList<>();
+//        for (CompanyClient client: clients) {
+//            ClientDTO byId = clientService.getById(client.getClient().getId());
+//            result.add(byId);
+//        }
+//        return result;
+//    }
+
+    // companyga tegishli clientlarni user bilan birga olib kelish
+    public List<ClientDTO> findAllClientsWithUser(Long companyId) {
+        List<Client> clients = companyClientRepository.findClientsByCompanyIdWithUser(companyId);
+
+        return clients.stream()
+                .map(client -> ClientDTO.builder()
+                        .id(client.getId())
+                        .firstName(client.getFirstName())
+                        .lastName(client.getLastName())
+                        .phoneNumber(client.getPhone())
+                        .balance(client.getBalance())
+                        .username(client.getUser().getUsername())
+                        .role(client.getUser().getRole())
+                        .build())
+                .toList();
     }
+
 
     // companyni client orqali topish uchun  yozildi
     public List<CompanyDTO> findCompanyByClientId(Long clientId){

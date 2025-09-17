@@ -31,7 +31,7 @@ public class Employee extends AbsLongEntity {
     @OneToOne(cascade = CascadeType.ALL,orphanRemoval = true)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Company company;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

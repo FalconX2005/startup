@@ -7,6 +7,7 @@ import uz.pdp.startup.payload.ClientDTO;
 import uz.pdp.startup.payload.EmployeeDTO;
 import uz.pdp.startup.payload.withoutId.EmployeeDto;
 import uz.pdp.startup.service.ClientService;
+import uz.pdp.startup.service.CompanyClientService;
 import uz.pdp.startup.service.EmployeeService;
 
 import java.util.List;
@@ -17,29 +18,30 @@ import java.util.List;
 public class UserController {
     private final ClientService clientService;
     private final EmployeeService employeeService;
+    private final CompanyClientService companyClientService;
 
-    @GetMapping("/clients")
-    public ApiResult<List<ClientDTO>> getAllClients() {
-        List<ClientDTO> allClients = clientService.getAll();
+    @GetMapping("/{companyId}/clients")
+    public ApiResult<List<ClientDTO>> getAllClients(@PathVariable Long companyId) {
+        List<ClientDTO> allClients = companyClientService.findAllClientsWithUser(companyId);
         return ApiResult.success(allClients);
     }
-    @PostMapping("/clients")
+    @PostMapping("/{companyId}/clients")
     public ApiResult<ClientDTO> createClient(@RequestBody ClientDTO client, @PathVariable Long companyId) {
         return clientService.add(client, companyId);
     }
     @GetMapping("/clients/{clientId}")
-    public ClientDTO getClientById(@PathVariable Long id) {
-        ClientDTO clientById = clientService.getById(id);
+    public ClientDTO getClientById(@PathVariable Long clientId) {
+        ClientDTO clientById = clientService.getById(clientId);
         return clientById;
     }
     @PutMapping("/clients/{clientId}")
-    public ClientDTO updateClient(@PathVariable Long id, @RequestBody ClientDTO client) {
+    public ClientDTO updateClient(@PathVariable Long clientId, @RequestBody ClientDTO client) {
         ClientDTO update = clientService.update(client);
         return update;
     }
     @DeleteMapping("/clients/{clientId}")
-    public ClientDTO deleteClient(@PathVariable Long id) {
-        ClientDTO delete = clientService.delete(id);
+    public ClientDTO deleteClient(@PathVariable Long clientId) {
+        ClientDTO delete = clientService.delete(clientId);
         return delete;
     }
     @GetMapping("/employees")
@@ -51,17 +53,17 @@ public class UserController {
         return employeeService.createEmployee(employeeDTO);
     }
     @GetMapping("/employees/{employeeId}")
-    public ApiResult<EmployeeDTO> getEmployeeById(@PathVariable Long id) {
-        return employeeService.findById(id);
+    public ApiResult<EmployeeDTO> getEmployeeById(@PathVariable Long employeeId) {
+        return employeeService.findById(employeeId);
     }
 
     @PutMapping("/employees/{employeeId}")
-    public ApiResult<EmployeeDTO> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDTO) {
-        return employeeService.update(id, employeeDTO);
+    public ApiResult<EmployeeDTO> updateEmployee(@PathVariable Long employeeId, @RequestBody EmployeeDto employeeDTO) {
+        return employeeService.update(employeeId, employeeDTO);
     }
-    @DeleteMapping("/employees/employeeId")
-    public ApiResult<EmployeeDTO> deleteEmployee(@PathVariable Long id) {
-        return employeeService.delete(id);
+    @DeleteMapping("/employees/{employeeId}")
+    public ApiResult<EmployeeDTO> deleteEmployee(@PathVariable Long employeeId) {
+        return employeeService.delete(employeeId);
     }
 
 }

@@ -2,6 +2,7 @@ package uz.pdp.startup.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 import uz.pdp.startup.entity.tempAbs.AbsLongEntity;
 import uz.pdp.startup.enums.Priority;
 
@@ -14,9 +15,10 @@ import java.time.LocalDate;
 @Setter
 @ToString
 @Builder
+@SQLDelete(sql = "UPDATE debts SET deleted = true WHERE id = ?")
 public class Debts extends AbsLongEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Client  client;
 
 /*

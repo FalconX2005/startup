@@ -29,8 +29,8 @@ public class AdminController {
     }
 
     @GetMapping("/{companyId}")
-    public ApiResult<CompanyDTO> getById(@RequestParam Long id) {
-        return ApiResult.success(companyService.findById(id));
+    public ApiResult<CompanyDTO> getById(@PathVariable Long companyId) {
+        return ApiResult.success(companyService.findById(companyId));
     }
 
     @PostMapping
@@ -39,25 +39,24 @@ public class AdminController {
     }
 
     @DeleteMapping("/{companyId}")
-    public ApiResult<CompanyDTO> delete(@PathVariable Long id) {
-        return ApiResult.success(companyService.delete(id));
+    public ApiResult<CompanyDTO> delete(@PathVariable Long companyId) {
+        return ApiResult.success(companyService.delete(companyId));
     }
 
     @PutMapping("/{companyId}")
-    public ApiResult<CompanyDTO> update(@PathVariable Long id, @RequestBody CompanyDTO companyDto) {
+    public ApiResult<CompanyDTO> update(@PathVariable Long companyId, @RequestBody CompanyDTO companyDto) {
         return ApiResult.success(companyService.update(companyDto));
 
     }
 
     @GetMapping("/search")
     public ApiResult<List<CompanyDTO>> search(@RequestParam String name) {
-        List<CompanyDTO> companyDTOS = searchService.searchCompany(name);
-        return ApiResult.success(companyDTOS);
+        return searchService.searchCompany(name);
     }
 
     @GetMapping("/{companyId}/clients")
     public ApiResult<List<ClientDTO>> findAllClientsByCompanyId(@PathVariable Long companyId) {
-        List<ClientDTO> allClients = companyClientService.findAllClients(companyId);
+        List<ClientDTO> allClients = companyClientService.findAllClientsWithUser(companyId);
         return ApiResult.success(allClients);
     }
 
@@ -86,8 +85,8 @@ public class AdminController {
 
     @GetMapping("/clientSearch")
     public ApiResult<List<ClientDTO>> searchClient(@RequestParam String name) {
-        List<ClientDTO> clientDTOS = searchService.searchClient(name);
-        return ApiResult.success(clientDTOS);
+
+        return searchService.searchClient(name);
     }
 
 }
