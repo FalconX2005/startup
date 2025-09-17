@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 import uz.pdp.startup.entity.tempAbs.AbsLongEntity;
 
 @Entity
@@ -14,6 +15,7 @@ import uz.pdp.startup.entity.tempAbs.AbsLongEntity;
 @Setter
 @ToString
 @Builder
+@SQLDelete(sql = "UPDATE company SET deleted = true WHERE id = ?")
 public class Company extends AbsLongEntity {
 
     @Column(nullable = false,unique = true)

@@ -3,6 +3,7 @@ package uz.pdp.startup.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 import uz.pdp.startup.entity.tempAbs.AbsLongEntity;
 
 /**
@@ -16,7 +17,7 @@ import uz.pdp.startup.entity.tempAbs.AbsLongEntity;
 @Setter
 @ToString
 @Entity
-
+@SQLDelete(sql = "UPDATE attachment SET deleted = true WHERE id = ?")
 public class Attachment extends AbsLongEntity {
     private String fileName;
 
