@@ -7,14 +7,15 @@ import uz.pdp.startup.entity.Debts;
 import uz.pdp.startup.exception.RestException;
 import uz.pdp.startup.payload.ApiResult;
 import uz.pdp.startup.payload.DebtsDTO;
+import uz.pdp.startup.payload.withoutId.CategoryDTO;
+import uz.pdp.startup.payload.withoutId.DebtChartDTO;
 import uz.pdp.startup.payload.withoutId.DebtsDto;
 import uz.pdp.startup.repository.ClientRepository;
 import uz.pdp.startup.repository.CompanyRepository;
 import uz.pdp.startup.repository.DebtsRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -135,4 +136,65 @@ public class DebtsService {
                 .build()
         );
     }
+
+    public ApiResult<List<DebtChartDTO>> getDebtsByMonthBetween(LocalDate startDate, LocalDate endDate) {
+        List<Object[]> results = debtsRepository.getDebtSumByDayBetween(startDate, endDate);
+
+        String[] oylar = {"Yan","Fev","Mar","Apr","May","Iyn","Iyl","Avg","Sen","Okt","Noy","Dek"};
+        List<DebtChartDTO> response = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Integer month = (Integer) row[0];
+            Long total = (Long) row[1];
+            response.add(new DebtChartDTO(oylar[month-1], total));
+        }
+
+        return ApiResult.success(response);
+    }
+
+
+    public ApiResult<List<CategoryDTO>> getDebtsByCategory() {
+        List<Object[]> results = debtsRepository.getDebtSumByCategory();
+
+        List<CategoryDTO> response = new ArrayList<>();
+        long totalSum = 0;
+
+        for (Object[] row : results) {
+            totalSum += (Long) row[1];
+        }
+
+        for (Object[] row : results) {
+            String priority = row[0].toString();
+            Long total = (Long) row[1];
+
+            double percent = (totalSum > 0) ? (total * 100.0 / totalSum) : 0.0;
+
+            String name = priority + " toifa";
+
+            response.add(new CategoryDTO(name, total, percent));
+        }
+
+        return ApiResult.success(response);
+    }
+
+    public List<Map<String, Object>> getAllTimeCategoryData() {
+        List<Object[]> results = debtsRepository.getDebtSumByCategory();
+        long total = results.stream()
+                .mapToLong(r -> (Long) r[1])
+                .sum();
+
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            String priority = row[0].toString();
+            Long sum = (Long) row[1];
+            double percent = total > 0 ? (sum * 100.0 / total) : 0;
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", priority + " toifa");
+            map.put("value", percent);
+            response.add(map);
+        }
+        return response;
+    }
+
 }
