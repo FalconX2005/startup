@@ -83,10 +83,10 @@ public class AdminController {
         return delete;
     }
 
-    @GetMapping("/clientSearch")
-    public ApiResult<List<ClientDTO>> searchClient(@RequestParam String name) {
+    @GetMapping("/{companyId}/clientSearch")
+    public ApiResult<List<ClientDTO>> searchClient(@RequestParam String name,@PathVariable Long companyId) {
 
-        return searchService.searchClient(name);
+        return searchService.searchClient(companyId,name);
     }
 
 }
