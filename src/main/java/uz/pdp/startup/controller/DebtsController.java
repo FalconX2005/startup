@@ -20,7 +20,7 @@ import java.util.Map;
 @RequestMapping("/debts")
 @RequiredArgsConstructor
 public class DebtsController {
-    private final DebtsService  debtsService;
+    private final DebtsService debtsService;
 
     @GetMapping
     public ApiResult<List<DebtsDTO>> getAllDebts() {
@@ -31,14 +31,17 @@ public class DebtsController {
     public ApiResult<DebtsDTO> getDebtById(@PathVariable Long id) {
         return debtsService.findById(id);
     }
+
     @PostMapping("/create")
     public ApiResult<DebtsDTO> createDebt(@RequestBody DebtsDto dto) {
         return debtsService.save(dto);
     }
+
     @PutMapping("/update")
     public ApiResult<DebtsDTO> updateDebtById(@RequestBody DebtsDto dto, @PathVariable Long id) {
-        return debtsService.update(id,dto);
+        return debtsService.update(id, dto);
     }
+
     @DeleteMapping("/{id}")
     public ApiResult<DebtsDTO> deleteDebtById(@PathVariable Long id) {
         return debtsService.delete(id);
@@ -47,7 +50,7 @@ public class DebtsController {
     @GetMapping("/chart/month/between")
     public ApiResult<List<DebtChartDTO>> getByMonthBetween(
             @RequestParam("fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam("toDate")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @RequestParam("toDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         return debtsService.getDebtsByMonthBetween(startDate, endDate);
     }

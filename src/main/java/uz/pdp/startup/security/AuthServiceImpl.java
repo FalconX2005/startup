@@ -61,12 +61,12 @@ public class AuthServiceImpl implements AuthService {
 
         String accessToken = jwtProvider.generateToken(
                 user,
-                new Date(System.currentTimeMillis() + 15 * 60 * 1000) // 15 min
+                new Date(System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000)
         );
 
         String refreshToken = jwtProvider.generateToken(
                 user,
-                new Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000) // 30 kun
+                new Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000)
         );
 
         return new TokenDTO(accessToken, refreshToken);
