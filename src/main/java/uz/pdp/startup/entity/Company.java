@@ -2,6 +2,7 @@ package uz.pdp.startup.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
@@ -31,4 +32,6 @@ public class Company extends AbsLongEntity {
     @Column(nullable = false)
     @Pattern(regexp = "\\+998\\d{9}", message = "Telefon raqam +998 bilan boshlanib, 9 raqamdan iborat bo‘lishi kerak")
     private String phone;
+
+
 }
