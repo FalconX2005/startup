@@ -5,6 +5,14 @@ spring:
     password: 123
     driver-class-name: org.postgresql.Driver
 
+    hikari:
+      minimum-idle: 5              # Har doim kamida 5 ta connection ochiq tursin
+      maximum-pool-size: 20        # Maksimal connection soni
+      idle-timeout: 300000         # Bo‘sh connection 5 daqiqa tursa yopiladi (ms)
+      max-lifetime: 540000         # Connection 9 daqiqada yangilanadi (ms)
+      connection-timeout: 30000    # Connection ochilishini kutish vaqti (30s)
+      validation-timeout: 5000     # Connection validatsiyasi uchun timeout (5s)
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -30,4 +38,4 @@ app:
     username: "umar"
     password: "umar1234"
   files:
-      baseFolder: /files
+    baseFolder: /files

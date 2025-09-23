@@ -15,6 +15,7 @@ import uz.pdp.startup.payload.ApiResult;
 import uz.pdp.startup.payload.ClientDTO;
 import uz.pdp.startup.payload.CompanyDTO;
 import uz.pdp.startup.payload.EmployeeDTO;
+import uz.pdp.startup.service.CompanyClientService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 public class SearchService {
 
     private final EntityManager entityManager;
+    private final CompanyClientService companyClientService;
 
 
     public ApiResult<List<CompanyDTO>> searchCompany(String companyName) {
@@ -63,29 +65,46 @@ public class SearchService {
                 .build();
     }
 
-    public ApiResult<List<ClientDTO>> searchClient(String name) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
-        Root<Client> from = criteriaQuery.from(Client.class);
-        List<Predicate> predicates = new ArrayList<>();
+    public ApiResult<List<ClientDTO>> searchClient(Long companyId ,String name) {
+        List<ClientDTO> allClients = companyClientService.findAllClientsWithUser(companyId);
+        if(allClients.isEmpty()) {
+            return ApiResult.error("company not found");
+        }
+        List<ClientDTO> filteredClients = allClients.stream()
+                .filter(client ->
+                        client.getFirstName().toLowerCase().contains(name.toLowerCase()) ||
+                                client.getLastName().toLowerCase().contains(name.toLowerCase())
+                )
+                .collect(Collectors.toList());
 
-        Predicate firstName = criteriaBuilder.like(criteriaBuilder.lower(from.get("firstName")), "%" + name.toLowerCase() + "%");
-        Predicate lastName = criteriaBuilder.like(criteriaBuilder.lower(from.get("lastName")), "%" + name.toLowerCase() + "%");
-
-        Predicate predicate = criteriaBuilder.or(firstName, lastName);
-        predicates.add(predicate);
-
-        criteriaQuery.where(predicates.toArray(new Predicate[0]));
-
-        List<Client> resultList = entityManager.createQuery(criteriaQuery).getResultList();
-        if(resultList.isEmpty()) {
-return ApiResult.error("client not found");
+        if (filteredClients.isEmpty()) {
+            return ApiResult.error("client not found");
         }
 
-        return ApiResult.success(resultList
-                .stream()
-                .map(this::convertClientToDto)
-                .collect(Collectors.toList()));
+        return ApiResult.success(filteredClients);
+//
+//        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+//        CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
+//        Root<Client> from = criteriaQuery.from(Client.class);
+//        List<Predicate> predicates = new ArrayList<>();
+//
+//        Predicate firstName = criteriaBuilder.like(criteriaBuilder.lower(from.get("firstName")), "%" + name.toLowerCase() + "%");
+//        Predicate lastName = criteriaBuilder.like(criteriaBuilder.lower(from.get("lastName")), "%" + name.toLowerCase() + "%");
+//
+//        Predicate predicate = criteriaBuilder.or(firstName, lastName);
+//        predicates.add(predicate);
+//
+//        criteriaQuery.where(predicates.toArray(new Predicate[0]));
+//
+//        List<Client> resultList = entityManager.createQuery(criteriaQuery).getResultList();
+//        if(resultList.isEmpty()) {
+//return ApiResult.error("client not found");
+//        }
+//
+//        return ApiResult.success(resultList
+//                .stream()
+//                .map(this::convertClientToDto)
+//                .collect(Collectors.toList()));
     }
 
     private ClientDTO convertClientToDto(Client client) {
