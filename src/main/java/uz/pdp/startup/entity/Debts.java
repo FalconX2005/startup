@@ -23,10 +23,6 @@ public class Debts extends AbsLongEntity {
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Company company;
-/*
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Product  product;
-*/
 
     @Column(nullable = false)
     private Long debtAmount;

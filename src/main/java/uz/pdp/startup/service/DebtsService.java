@@ -1,3 +1,4 @@
+/*
 package uz.pdp.startup.service;
 
 import lombok.RequiredArgsConstructor;
@@ -6,10 +7,12 @@ import uz.pdp.startup.entity.Client;
 import uz.pdp.startup.entity.Debts;
 import uz.pdp.startup.exception.RestException;
 import uz.pdp.startup.payload.ApiResult;
-import uz.pdp.startup.payload.DebtsDTO;
+
+import uz.pdp.startup.payload.DebtsDTO2;
 import uz.pdp.startup.payload.withoutId.CategoryDTO;
 import uz.pdp.startup.payload.withoutId.DebtChartDTO;
 import uz.pdp.startup.payload.withoutId.DebtsDto;
+import uz.pdp.startup.payload.withoutId.DebtsDto2;
 import uz.pdp.startup.repository.ClientRepository;
 import uz.pdp.startup.repository.CompanyRepository;
 import uz.pdp.startup.repository.DebtsRepository;
@@ -29,13 +32,13 @@ public class DebtsService {
 //
 //    }
 
-    public ApiResult<DebtsDTO> findById(Long id) {
+    public ApiResult<DebtsDTO2> findById(Long id) {
         Optional<Debts> byId = debtsRepository.findById(id);
         if (!byId.isPresent()) {
             throw RestException.notFound("object doesn't exists", id);
         }
         Debts debts = byId.get();
-        DebtsDTO build = DebtsDTO.builder()
+        DebtsDTO2 build = DebtsDTO2.builder()
                 .id(debts.getId())
                 .debtAmount(debts.getDebtAmount())
                 .clientId(debts.getClient().getId())
@@ -47,15 +50,15 @@ public class DebtsService {
 
     }
 
-    public ApiResult<List<DebtsDTO>> findAll() {
+    public ApiResult<List<DebtsDTO2>> findAll() {
         List<Debts> all = debtsRepository.findAll();
-        List<DebtsDTO> result = new ArrayList<>();
+        List<DebtsDTO2> result = new ArrayList<>();
         if (all.isEmpty()) {
             throw RestException.notFound("object doesn't exists", all.size());
         }
         for (Debts debts : all) {
 
-            result.add(DebtsDTO.builder()
+            result.add(DebtsDTO2.builder()
                     .id(debts.getId())
                     .debtAmount(debts.getDebtAmount())
                     .clientId(debts.getClient().getId())
@@ -67,7 +70,7 @@ public class DebtsService {
         return ApiResult.success(result);
     }
 
-    public ApiResult<DebtsDTO> save(DebtsDto dto) {
+    public ApiResult<DebtsDTO2> save(DebtsDto2 dto) {
         Optional<Client> byId = clientRepository.findById(dto.getClientId());
         if (!byId.isPresent()) {
             throw RestException.notFound("client not found", dto.getClientId());
@@ -82,7 +85,7 @@ public class DebtsService {
                 .client(client).build();
         Debts debts = debtsRepository.save(build);
 
-        return ApiResult.success(DebtsDTO.builder()
+        return ApiResult.success(DebtsDTO2.builder()
                 .id(debts.getId())
                 .fromDate(debts.getFromDate())
                 .toDate(debts.getToDate())
@@ -93,7 +96,7 @@ public class DebtsService {
         );
     }
 
-    public ApiResult<DebtsDTO> update(Long id,DebtsDto dto) {
+    public ApiResult<DebtsDTO2> update(Long id,DebtsDto2 dto) {
         Optional<Client> byId = clientRepository.findById(dto.getClientId());
 
         if (!byId.isPresent()) {
@@ -112,7 +115,7 @@ public class DebtsService {
         debts.setFromDate(dto.getFromDate());
         Debts save = debtsRepository.save(debts);
 
-        return ApiResult.success(DebtsDTO.builder()
+        return ApiResult.success(DebtsDTO2.builder()
                 .id(save.getId())
                 .debtAmount(save.getDebtAmount())
                 .toDate(save.getToDate())
@@ -121,12 +124,12 @@ public class DebtsService {
                 .clientId(save.getClient().getId())
                 .build());
     }
-    public ApiResult<DebtsDTO> delete(Long id) {
+    public ApiResult<DebtsDTO2> delete(Long id) {
         Debts debts = debtsRepository.findById(id).orElseThrow(() ->
                 RestException.notFound("object doesn't exists", id));
 
         debtsRepository.delete(debts);
-        return ApiResult.success(DebtsDTO.builder()
+        return ApiResult.success(DebtsDTO2.builder()
                 .id(debts.getId())
                 .debtAmount(debts.getDebtAmount())
                 .toDate(debts.getToDate())
@@ -197,4 +200,61 @@ public class DebtsService {
         return response;
     }
 
+
+
+    public ApiResult<Map<String, Object>> getDebtTrendByInterval(String interval) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate;
+
+        switch (interval.toLowerCase()) {
+            case "30d":
+                startDate = endDate.minusDays(30);
+                break;
+            case "90d":
+                startDate = endDate.minusDays(90);
+                break;
+            case "6m":
+                startDate = endDate.minusMonths(6);
+                break;
+            case "9m":
+                startDate = endDate.minusMonths(9);
+                break;
+            default:
+                throw RestException.badRequest("interval noto‘g‘ri kiritilgan");
+        }
+
+        List<Object[]> results = debtsRepository.getDebtSumByDayBetween(startDate, endDate);
+
+        Map<Integer, Long> monthlySums = new HashMap<>();
+        long total = 0;
+
+        for (Object[] row : results) {
+            Integer month = (Integer) row[0];
+            Long sum = (Long) row[1];
+            monthlySums.put(month, sum);
+            total += sum;
+        }
+
+        int nowMonth = endDate.getMonthValue();
+        long lastMonth = monthlySums.getOrDefault(nowMonth, 0L);
+        long prevMonth = monthlySums.getOrDefault(nowMonth - 1, 0L);
+        double percent = (prevMonth > 0) ? ((lastMonth - prevMonth) * 100.0 / prevMonth) : 0;
+
+        String[] oylar = {"Yan","Fev","Mar","Apr","May","Iyn","Iyl","Avg","Sen","Okt","Noy","Dek"};
+        List<Map<String, Object>> chartData = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("month", oylar[i - 1]);
+            map.put("total", monthlySums.getOrDefault(i, 0L));
+            chartData.add(map);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("value", total);
+        response.put("percent", percent);
+        response.put("chart", chartData);
+
+        return ApiResult.success(response);
+    }
 }
+*/

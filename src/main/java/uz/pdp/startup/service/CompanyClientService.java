@@ -20,7 +20,8 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CompanyClientService {
+public class
+CompanyClientService {
     private final CompanyClientRepository companyClientRepository;
     private final ClientService clientService;
     private final CompanyService companyService;

@@ -13,11 +13,11 @@ import java.util.List;
 public interface CompanyClientRepository extends JpaRepository<CompanyClient,Long> {
     List<CompanyClient> findByCompanyId(Long companyId);
 
-    @Query("select c from CompanyClient cc " +
-            "join cc.client c " +
-            "join fetch c.user " +
-            "where cc.company.id = :companyId")
+    @Query("SELECT cc.client FROM CompanyClient cc " +
+            "JOIN FETCH cc.client.user " +
+            "WHERE cc.company.id = :companyId")
     List<Client> findClientsByCompanyIdWithUser(@Param("companyId") Long companyId);
+
 
     List<CompanyClient> getByClientId(Long clientId);
 }

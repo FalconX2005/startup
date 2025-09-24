@@ -14,9 +14,7 @@ import uz.pdp.startup.repository.CompanyClientRepository;
 import uz.pdp.startup.repository.CompanyRepository;
 import uz.pdp.startup.repository.UserRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -192,6 +190,16 @@ public class ClientService {
         companyClientRepository.save(companyClient);
 
         return  ApiResult.success(clientDto);
+    }
+
+
+    public ApiResult<Map<String, Object>> getTotalClientsByCompany(Long companyId) {
+        long totalClients = clientRepository.countByCompanyId(companyId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("total", totalClients);
+
+        return ApiResult.success(response);
     }
 
 }

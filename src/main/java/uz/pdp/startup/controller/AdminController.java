@@ -11,6 +11,7 @@ import uz.pdp.startup.service.CompanyClientService;
 import uz.pdp.startup.service.CompanyService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/companies")
@@ -87,6 +88,11 @@ public class AdminController {
     public ApiResult<List<ClientDTO>> searchClient(@RequestParam String name,@PathVariable Long companyId) {
 
         return searchService.searchClient(companyId,name);
+    }
+
+    @GetMapping("/total/{companyId}")
+    public ApiResult<Map<String, Object>> getTotalClients(@PathVariable Long companyId) {
+        return clientService.getTotalClientsByCompany(companyId);
     }
 
 }

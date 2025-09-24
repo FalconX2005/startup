@@ -30,4 +30,6 @@ public class Client extends AbsLongEntity {
     @Column(nullable = false)
     private Long balance;
 
+    @ManyToOne
+    private Company company;
 }
