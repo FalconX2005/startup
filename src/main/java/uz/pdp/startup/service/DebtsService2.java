@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uz.pdp.startup.entity.Client;
 import uz.pdp.startup.entity.Company;
 import uz.pdp.startup.entity.Debts;
+import uz.pdp.startup.entity.Transactions;
 import uz.pdp.startup.exception.RestException;
 import uz.pdp.startup.payload.ApiResult;
 import uz.pdp.startup.payload.DebtsDTO2;
@@ -25,6 +26,7 @@ public class DebtsService2 {
     private final DebtsRepository debtsRepository;
     private final CompanyRepository companyRepository;
     private final ClientRepository  clientRepository;
+    private final TransactionService transactionService;
 
     public List<DebtsDTO2> getDebts(Long companyId){
         List<Debts> allByCompanyId = debtsRepository.getAllByCompanyId(companyId);
@@ -86,6 +88,7 @@ public class DebtsService2 {
          }
         Client client = byId1.get();
 
+
         Debts build = Debts.builder()
                 .client(client)
                 .company(company)
@@ -98,6 +101,14 @@ public class DebtsService2 {
 
         client.setBalance(client.getBalance()+debtsDto2.getDebtAmount());
         clientRepository.save(client);
+
+        transactionService.create(Transactions.builder()
+                .amount(debtsDto2.getDebtAmount())
+                .transactionDate(LocalDate.now())
+                .client(client)
+                .company(company)
+                .build()
+        );
 
         DebtsDTO2 result = DebtsDTO2.builder()
                 .id(save.getId())
@@ -122,11 +133,22 @@ public class DebtsService2 {
 
         Debts debts = byId.get();
 
-        debts.setDebtAmount(debtsDTO.getDebtAmount());
+        debts.setDebtAmount(debts.getDebtAmount()-debtsDTO.getDebtAmount());
         debts.setFromDate(debtsDTO.getFromDate());
         debts.setPriority(debtsDTO.getPriority());
         debts.setToDate(debtsDTO.getToDate());
+        Client client = debts.getClient();
+        client.setBalance(client.getBalance()-debtsDTO.getDebtAmount());
+        clientRepository.save(client);
         Debts save = debtsRepository.save(debts);
+
+        transactionService.create(Transactions.builder()
+                .amount(debtsDTO.getDebtAmount())
+                .transactionDate(LocalDate.now())
+                .client(client)
+                .company(debts.getCompany())
+                .build()
+        );
         return DebtsDTO2.builder()
                 .id(save.getId())
                 .toDate(save.getToDate())
