@@ -1,3 +1,4 @@
+//
 //package uz.pdp.startup.config;
 //
 //import org.springframework.context.annotation.Bean;
@@ -15,10 +16,8 @@
 //import uz.pdp.startup.security.AuthService;
 //import uz.pdp.startup.security.SecurityFilter;
 //
-///**
-// * Created by: Umar
-// * DateTime: 7/19/2025 2:30 PM
-// */
+//import static org.springframework.security.config.Customizer.withDefaults;
+//
 //@EnableWebSecurity
 //@Configuration
 //@EnableMethodSecurity
@@ -28,7 +27,6 @@
 //    private final SecurityFilter securityFilter;
 //
 //    public SecurityConfig(@Lazy AuthService authService, @Lazy SecurityFilter securityFilter) {
-//
 //        this.authService = authService;
 //        this.securityFilter = securityFilter;
 //    }
@@ -36,9 +34,12 @@
 //    @Bean
 //    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 //        http.csrf(AbstractHttpConfigurer::disable);
-//        http.cors();
+//
+//        // ✅ CorsConfig dagi sozlamalarni ishlatadi
+//        http.cors(withDefaults());
+//
 //        http.userDetailsService(authService);
-////        AbstractHttpConfigurer::disable
+//
 //        http.authorizeHttpRequests(conf -> conf
 //                .requestMatchers(
 //                        "/swagger-ui/**",
@@ -68,6 +69,7 @@
 //        return new BCryptPasswordEncoder();
 //    }
 //}
+//
 package uz.pdp.startup.config;
 
 import org.springframework.context.annotation.Bean;
@@ -102,13 +104,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // ✅ CSRF o‘chirib qo‘yildi
         http.csrf(AbstractHttpConfigurer::disable);
 
         // ✅ CorsConfig dagi sozlamalarni ishlatadi
         http.cors(withDefaults());
 
+        // ✅ auth service
         http.userDetailsService(authService);
 
+        // ✅ ruxsat berilgan URL lar
         http.authorizeHttpRequests(conf -> conf
                 .requestMatchers(
                         "/swagger-ui/**",
@@ -117,10 +122,13 @@ public class SecurityConfig {
                         "/webjars/**",
                         "/auth/**"
                 ).permitAll()
-                .anyRequest()
-                .authenticated()
+                // ✅ OPTIONS (preflight) ga ham ruxsat
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                // boshqa barcha requestlar uchun auth kerak
+                .anyRequest().authenticated()
         );
 
+        // ✅ custom security filter
         http.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -138,4 +146,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-
