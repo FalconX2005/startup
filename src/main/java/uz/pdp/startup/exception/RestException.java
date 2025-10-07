@@ -1,6 +1,7 @@
 package uz.pdp.startup.exception;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 
 @Getter
@@ -22,5 +23,9 @@ public class RestException extends RuntimeException {
 
     public static RestException badRequest(String message) {
         return new RestException(message, 400);
+    }
+
+    public static RestException restThrow(String message, HttpStatus status) {
+        return new RestException(message, status.value());
     }
 }

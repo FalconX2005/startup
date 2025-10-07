@@ -4,11 +4,13 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import uz.pdp.startup.entity.User;
 import uz.pdp.startup.enums.RoleEnum;
 import uz.pdp.startup.payload.LoginDTO;
@@ -25,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Lazy
+
     private final JwtProvider jwtProvider;
 
     @Value("${app.admin.username}")
@@ -56,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
 
         boolean matches = passwordEncoder.matches(loginDTO.getPassword(), user.getPassword());
         if (!matches) {
-            throw new AccessDeniedException("Username yoki parol noto‘g‘ri");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username yoki parol noto‘g‘ri");
         }
 
         String accessToken = jwtProvider.generateToken(
@@ -73,11 +75,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+
     @Override
     public String register(RegisterDTO registerDTO) {
         if (userRepository.existsByUsername(registerDTO.getUsername())) {
-            throw new RuntimeException("Bu username allaqachon mavjud");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bu username allaqachon mavjud");
         }
+
 
         User user = new User();
         user.setUsername(registerDTO.getUsername());
